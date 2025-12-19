@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="sumogame.controller.ResultsScreenController"
+      alignment="CENTER" spacing="20"
+      style="-fx-background-color: #1a1a1a; -fx-padding: 40;"
+      fx:id="resultsContainer">
+
+    <Label text="ИТОГИ МАТЧА"
+           style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;">
+        <font>
+            <Font name="Arial" size="32" />
+        </font>
+    </Label>
+
+    <VBox spacing="25" alignment="CENTER">
+        <!-- Поздравление -->
+        <Label fx:id="congratulationsLabel"
+               style="-fx-font-size: 28px; -fx-font-weight: bold;">
+            <font>
+                <Font name="Arial" size="28" />
+            </font>
+        </Label>
+
+        <!-- Статус для локального игрока -->
+        <Label fx:id="winnerLabel"
+               style="-fx-font-size: 24px;">
+            <font>
+                <Font name="Arial" size="24" />
+            </font>
+        </Label>
+
+        <Label fx:id="matchResultLabel"
+               style="-fx-font-size: 22px; -fx-font-weight: bold;">
+            <font>
+                <Font name="Arial" size="22" />
+            </font>
+        </Label>
+
+        <Label fx:id="scoreLabel"
+               style="-fx-text-fill: white; -fx-font-size: 20px;">
+            <font>
+                <Font name="Arial" size="20" />
+            </font>
+        </Label>
+
+        <VBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 20;">
+            <Label text="Результаты раундов:"
+                   style="-fx-text-fill: lightgray; -fx-font-size: 18px;">
+                <font>
+                    <Font name="Arial" size="18" />
+                </font>
+            </Label>
+
+            <Label fx:id="round1Result"
+                   style="-fx-text-fill: pink; -fx-font-size: 16px;">
+                <font>
+                    <Font name="Arial" size="16" />
+                </font>
+            </Label>
+
+            <Label fx:id="round2Result"
+                   style="-fx-text-fill: peachpuff; -fx-font-size: 16px;">
+                <font>
+                    <Font name="Arial" size="16" />
+                </font>
+            </Label>
+
+            <Label fx:id="round3Result"
+                   style="-fx-text-fill: red; -fx-font-size: 16px;">
+                <font>
+                    <Font name="Arial" size="16" />
+                </font>
+            </Label>
+        </VBox>
+
+        <VBox spacing="15" alignment="CENTER">
+            <Button text="В главное меню"
+                    fx:id="returnToMenuButton"
+                    onAction="#handleReturnToMenu"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;
+                           -fx-font-size: 18px; -fx-padding: 15 40;
+                           -fx-background-radius: 5; -fx-font-weight: bold;">
+                <font>
+                    <Font name="Arial" size="18" />
+                </font>
+            </Button>
+        </VBox>
+    </VBox>
+</VBox>

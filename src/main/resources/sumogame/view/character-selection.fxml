@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      alignment="CENTER"
+      spacing="20"
+      style="-fx-background-color: #2b2b2b;"
+      fx:controller="sumogame.controller.CharacterSelectionController">
+
+    <padding>
+        <Insets top="40" right="40" bottom="40" left="40"/>
+    </padding>
+
+    <!-- Заголовок игры -->
+    <Text text="СУМО ИГРА"
+          fill="WHITE">
+        <font>
+            <Font name="Arial" size="36.0" />
+        </font>
+    </Text>
+
+    <!-- Информация об управлении -->
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Управление в игре:"
+               textFill="WHITE"
+               style="-fx-font-size: 16;">
+            <font>
+                <Font name="Arial" size="16" />
+            </font>
+        </Label>
+        <Label text="WASD/Стрелки - движение, ПРОБЕЛ - суперспособность"
+               textFill="LIGHTGRAY"
+               style="-fx-font-size: 14;">
+            <font>
+                <Font name="Arial" size="14" />
+            </font>
+        </Label>
+    </VBox>
+
+    <!-- Блок выбора персонажа -->
+    <VBox alignment="CENTER" spacing="15">
+        <Text text="Выберите персонажа:"
+              fill="WHITE">
+            <font>
+                <Font name="Arial" size="18.0" />
+            </font>
+        </Text>
+
+        <!-- Контейнер для карточек персонажей -->
+        <HBox alignment="CENTER" spacing="20" fx:id="charactersContainer">
+            <!-- Здесь появятся карточки персонажей -->
+        </HBox>
+    </VBox>
+
+    <!-- Блок выбора режима игры -->
+    <VBox alignment="CENTER" spacing="15">
+        <Text text="Выберите режим:"
+              fill="WHITE">
+            <font>
+                <Font name="Arial" size="18.0" />
+            </font>
+        </Text>
+
+        <HBox alignment="CENTER" spacing="20">
+            <!-- Кнопка "Создать игру" (Сервер) -->
+            <Button text="Создать игру"
+                    prefWidth="150"
+                    prefHeight="50"
+                    onAction="#handleCreateGame"
+                    style="-fx-background-color: #2196F3; -fx-text-fill: white;
+                           -fx-font-size: 14; -fx-font-weight: bold;"/>
+
+            <!-- Кнопка "Подключиться" (Клиент) -->
+            <Button text="Подключиться"
+                    prefWidth="150"
+                    prefHeight="50"
+                    onAction="#handleConnectToGame"
+                    style="-fx-background-color: #FF9800; -fx-text-fill: white;
+                           -fx-font-size: 14; -fx-font-weight: bold;"/>
+        </HBox>
+    </VBox>
+
+</VBox>

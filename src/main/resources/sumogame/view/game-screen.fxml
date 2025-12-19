@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:id="gameContainer"
+           style="-fx-background-color: #1a1a1a;"
+           onKeyPressed="#handleKeyPressed"
+           fx:controller="sumogame.controller.GameScreenController">
+
+    <VBox spacing="10" style="-fx-padding: 20;">
+        <!-- Панель информации -->
+        <HBox spacing="30" alignment="CENTER">
+            <VBox spacing="5" alignment="CENTER">
+                <Label fx:id="player1ScoreLabel" text="Игрок 1: 0" textFill="PINK">
+                    <font>
+                        <Font name="Arial" size="18" />
+                    </font>
+                </Label>
+                <Label text="Способность:" textFill="WHITE" style="-fx-font-size: 12;">
+                    <font>
+                        <Font name="Arial" size="12" />
+                    </font>
+                </Label>
+                <ProgressBar fx:id="player1PowerUpBar" prefWidth="100" progress="1.0"
+                             style="-fx-accent: gold;"/>
+            </VBox>
+
+            <VBox spacing="5" alignment="CENTER">
+                <Label fx:id="roundNumberLabel" text="Раунд 1" textFill="WHITE">
+                    <font>
+                        <Font name="Arial" size="18" />
+                    </font>
+                </Label>
+                <Label fx:id="roundTimeLabel" text="Время: 60с" textFill="WHITE">
+                    <font>
+                        <Font name="Arial" size="18" />
+                    </font>
+                </Label>
+            </VBox>
+
+            <VBox spacing="5" alignment="CENTER">
+                <Label fx:id="player2ScoreLabel" text="Игрок 2: 0" textFill="LIGHTBLUE">
+                    <font>
+                        <Font name="Arial" size="18" />
+                    </font>
+                </Label>
+                <Label text="Способность:" textFill="WHITE" style="-fx-font-size: 12;">
+                    <font>
+                        <Font name="Arial" size="12" />
+                    </font>
+                </Label>
+                <ProgressBar fx:id="player2PowerUpBar" prefWidth="100" progress="1.0"
+                             style="-fx-accent: gold;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Игровое поле -->
+        <Canvas fx:id="gameCanvas" width="800" height="500"/>
+
+        <!-- Подсказки и информация -->
+        <VBox spacing="5" alignment="CENTER">
+            <Label text="Управление: WASD/Стрелки - движение, ПРОБЕЛ - способность"
+                   textFill="GRAY" alignment="CENTER">
+                <font>
+                    <Font name="Arial" size="14" />
+                </font>
+            </Label>
+
+            <!-- Индикатор способности текущего игрока -->
+            <HBox spacing="10" alignment="CENTER">
+                <Label fx:id="powerUpStatusLabel" text="Способность: ГОТОВА"
+                       textFill="GOLD" style="-fx-font-size: 14;">
+                    <font>
+                        <Font name="Arial" size="14" />
+                    </font>
+                </Label>
+
+                <Label fx:id="powerUpTimerLabel" text=""
+                       textFill="WHITE" style="-fx-font-size: 14;">
+                    <font>
+                        <Font name="Arial" size="14" />
+                    </font>
+                </Label>
+            </HBox>
+        </VBox>
+    </VBox>
+</StackPane>
