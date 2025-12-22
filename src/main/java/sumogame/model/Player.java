@@ -1,13 +1,12 @@
 package sumogame.model;
 
-import sumogame.util.DebugLogger;
-
 public class Player {
     private final int playerId;
     private CharacterType type;
-    private static final double BASE_STRENGTH = 1.0;
-    private static final double BASE_SPEED = 3.0;
-    public static final double BASE_SIZE = 25.0;
+    private static final double BASE_STRENGTH = GameConfig.PLAYER_BASE_STRENGTH;
+    private static final double BASE_SPEED = GameConfig.PLAYER_BASE_SPEED;
+    public static final double BASE_SIZE = GameConfig.PLAYER_BASE_SIZE;
+
     private double currentStrength;
     private double currentSpeed;
     private double currentSize;
@@ -28,13 +27,13 @@ public class Player {
         this.powerUpAvailable = true;
         this.powerUpActive = false;
         this.powerUpTimer = 0;
-        DebugLogger.log("Создан игрок " + playerId + ": " + characterType.getName() +
+        System.out.println("Создан игрок " + playerId + ": " + characterType.getName() +
                 " в позиции (" + startX + ", " + startY + ")");
     }
 
     public boolean activatePowerUp() {
         if (!powerUpAvailable || powerUpActive) {
-            DebugLogger.log("Игрок " + playerId + ": способность недоступна");
+            System.out.println("Игрок " + playerId + ": способность недоступна");
             return false;
         }
 
@@ -47,7 +46,7 @@ public class Player {
 
         applyAbilityEffect();
 
-        DebugLogger.log("Игрок " + playerId + " активировал " + type.getAbilityName());
+        System.out.println("Игрок " + playerId + " активировал " + type.getAbilityName());
         return true;
     }
 
@@ -71,7 +70,7 @@ public class Player {
         currentStrength = originalStrength;
         currentSpeed = originalSpeed;
         currentSize = originalSize;
-        DebugLogger.log("Игрок " + playerId + ": способность закончилась");
+        System.out.println("Игрок " + playerId + ": способность закончилась");
     }
 
     public void resetForNewRound(double startX, double startY) {
@@ -81,7 +80,7 @@ public class Player {
         this.powerUpAvailable = true;
         this.powerUpActive = false;
         this.powerUpTimer = 0;
-        DebugLogger.log("Игрок " + playerId + " сброшен в позицию (" + startX + ", " + startY + ")");
+        System.out.println("Игрок " + playerId + " сброшен в позицию (" + startX + ", " + startY + ")");
     }
 
     private void resetParameters() {
@@ -93,22 +92,15 @@ public class Player {
         this.originalSize = BASE_SIZE;
     }
 
-    public void move(String direction) {
-        Direction dir = Direction.fromString(direction);
-        if (dir == null) {
-            DebugLogger.error("Неизвестное направление: " + direction);
+    public void move(Direction direction) {
+        if (direction == null) {
+            System.out.println("Игрок " + playerId + ": попытка движения в null направлении");
             return;
         }
-        move(dir);
-    }
 
-    public void move(Direction direction) {
-        switch (direction) {
-            case UP: y -= currentSpeed; break;
-            case DOWN: y += currentSpeed; break;
-            case LEFT: x -= currentSpeed; break;
-            case RIGHT: x += currentSpeed; break;
-        }
+        double[] newPosition = direction.calculateNewPosition(x, y, currentSpeed);
+        this.x = newPosition[0];
+        this.y = newPosition[1];
     }
 
     public boolean collidesWith(Player other) {
@@ -118,12 +110,11 @@ public class Player {
         double minDistance = currentSize + other.currentSize;
         boolean collides = distance < minDistance;
         if (collides) {
-            DebugLogger.log("СТОЛКНОВЕНИЕ: Игрок " + playerId + " с Игроком " + other.playerId);
+            System.out.println("СТОЛКНОВЕНИЕ: Игрок " + playerId + " с Игроком " + other.playerId);
         }
         return collides;
     }
 
-    // Геттеры
     public int getPlayerId() { return playerId; }
     public CharacterType getType() { return type; }
     public double getX() { return x; }
@@ -136,7 +127,6 @@ public class Player {
     public double getPowerUpRemainingTime() { return Math.max(0, powerUpTimer); }
     public String getColorHex() { return type.getColorHex(); }
 
-    // Сеттеры
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;
@@ -144,6 +134,6 @@ public class Player {
 
     public void setType(CharacterType type) {
         this.type = type;
-        DebugLogger.log("Игрок " + playerId + " теперь: " + type.getName());
+        System.out.println("Игрок " + playerId + " теперь: " + type.getName());
     }
 }

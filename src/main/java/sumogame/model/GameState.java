@@ -1,7 +1,5 @@
 package sumogame.model;
 
-import sumogame.util.DebugLogger;
-
 public class GameState {
     private Player player1;
     private Player player2;
@@ -11,13 +9,12 @@ public class GameState {
     private double roundTime;
     private boolean gameActive = false;
     private boolean matchFinished = false;
-    private ArenaType currentArena;
+    private Arena currentArena;
     private int[] roundWinners;
-    private double arenaWidth;
-    private double arenaHeight;
 
     public GameState() {
         roundWinners = new int[GameConfig.TOTAL_ROUNDS];
+        this.currentArena = new Arena(ArenaType.PINK_CIRCLE);
     }
 
     public Player getPlayer1() { return player1; }
@@ -29,13 +26,13 @@ public class GameState {
     public int getPlayer1Score() { return player1Score; }
     public void setPlayer1Score(int score) {
         this.player1Score = score;
-        DebugLogger.log("Счет игрока 1: " + score);
+        System.out.println("Счет игрока 1: " + score);
     }
 
     public int getPlayer2Score() { return player2Score; }
     public void setPlayer2Score(int score) {
         this.player2Score = score;
-        DebugLogger.log("Счет игрока 2: " + score);
+        System.out.println("Счет игрока 2: " + score);
     }
 
     public int getRoundNumber() { return roundNumber; }
@@ -43,9 +40,9 @@ public class GameState {
     public void incrementRoundNumber() {
         if (roundNumber < GameConfig.TOTAL_ROUNDS) {
             roundNumber++;
-            DebugLogger.log("НОВЫЙ РАУНД: " + roundNumber);
+            System.out.println("НОВЫЙ РАУНД: " + roundNumber);
         } else {
-            DebugLogger.log("Не могу увеличить номер раунда, матч завершен");
+            System.out.println("Не могу увеличить номер раунда, матч завершен");
         }
     }
 
@@ -56,27 +53,20 @@ public class GameState {
 
     public void setGameActive(boolean active) {
         this.gameActive = active;
-        DebugLogger.log("Игра активна: " + active);
+        System.out.println("Игра активна: " + active);
     }
 
     public boolean isMatchFinished() { return matchFinished; }
 
     public void setMatchFinished(boolean finished) {
         this.matchFinished = finished;
-        DebugLogger.log("Матч завершен: " + finished);
+        System.out.println("Матч завершен: " + finished);
     }
+    public Arena getCurrentArena() { return currentArena; }
 
-    public double getArenaWidth() { return arenaWidth; }
-    public void setArenaWidth(double width) { this.arenaWidth = width; }
-
-    public double getArenaHeight() { return arenaHeight; }
-    public void setArenaHeight(double height) { this.arenaHeight = height; }
-
-    public ArenaType getCurrentArena() { return currentArena; }
-
-    public void setCurrentArena(ArenaType arena) {
-        this.currentArena = arena;
-        DebugLogger.log("Установлена арена: " + arena.getName());
+    public void setCurrentArena(ArenaType arenaType) {
+        this.currentArena = new Arena(arenaType); // Создаем новый объект Arena
+        System.out.println("Установлена арена: " + arenaType.getName());
     }
 
     public int[] getRoundWinners() { return roundWinners; }
@@ -86,7 +76,7 @@ public class GameState {
             roundWinners[roundIndex] = winnerId;
             String winnerName = winnerId == 1 ? "Игрок 1" :
                     winnerId == 2 ? "Игрок 2" : "Ничья";
-            DebugLogger.log("Раунд " + (roundIndex + 1) + ": победитель = " + winnerName);
+            System.out.println("Раунд " + (roundIndex + 1) + ": победитель = " + winnerName);
         }
     }
 

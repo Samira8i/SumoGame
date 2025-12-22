@@ -3,37 +3,54 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.Font?>
+<!-- вертикальный контейнер -->
 <VBox xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
       alignment="CENTER"
-      spacing="20"
-      style="-fx-background-color: #2b2b2b;"
+      spacing="15"
+      style="-fx-background-color: linear-gradient(to bottom, #FFF0F5, #FFE4E1);"
       fx:controller="sumogame.controller.CharacterSelectionController">
 
     <padding>
-        <Insets top="40" right="40" bottom="40" left="40"/>
+        <Insets top="20" right="40" bottom="20" left="40"/>
     </padding>
 
-    <!-- Заголовок игры -->
-    <Text text="СУМО ИГРА"
-          fill="WHITE">
+    <Text text="🌸🌸🌸🌸🌸🌸🌸🌸🌸"
+          fill="#FFB6C1">
         <font>
-            <Font name="Arial" size="36.0" />
+            <Font name="Arial" size="20" />
         </font>
     </Text>
 
-    <!-- Информация об управлении -->
-    <VBox alignment="CENTER" spacing="10">
-        <Label text="Управление в игре:"
-               textFill="WHITE"
-               style="-fx-font-size: 16;">
+    <!-- заголовок игры -->
+    <Text text="СУМО ИГРА"
+          fill="#DB7093">
+        <font>
+            <Font name="Arial" size="36.0"/>
+        </font>
+    </Text>
+
+    <!-- Подзаголовок -->
+    <Text text="Выберите своего бойца"
+          fill="#8B6969">
+        <font>
+            <Font name="Arial" size="16.0" />
+        </font>
+    </Text>
+
+    <!-- информация об управлении -->
+    <VBox alignment="CENTER" spacing="5" style="-fx-padding: 15; -fx-background-color: rgba(255, 255, 255, 0.7); -fx-background-radius: 15;">
+        <Label text="🎮 Управление в игре:"
+               textFill="#DB7093"
+               style="-fx-font-size: 16; -fx-font-weight: bold;">
             <font>
                 <Font name="Arial" size="16" />
             </font>
         </Label>
-        <Label text="WASD/Стрелки - движение, ПРОБЕЛ - суперспособность"
-               textFill="LIGHTGRAY"
+        <Label text="WASD/Стрелки - движение | ПРОБЕЛ - суперспособность"
+               textFill="#8B6969"
                style="-fx-font-size: 14;">
             <font>
                 <Font name="Arial" size="14" />
@@ -41,47 +58,92 @@
         </Label>
     </VBox>
 
-    <!-- Блок выбора персонажа -->
-    <VBox alignment="CENTER" spacing="15">
-        <Text text="Выберите персонажа:"
-              fill="WHITE">
+    <!-- блок выбора персонажа -->
+    <VBox alignment="CENTER" spacing="20">
+        <Text text="🌸 Выберите персонажа:"
+              fill="#DB7093">
             <font>
-                <Font name="Arial" size="18.0" />
+                <Font name="Arial" size="18.0"/>
             </font>
         </Text>
 
-        <!-- Контейнер для карточек персонажей -->
+        <!-- контейнер для карточек персонажей -->
         <HBox alignment="CENTER" spacing="20" fx:id="charactersContainer">
-            <!-- Здесь появятся карточки персонажей -->
         </HBox>
     </VBox>
 
-    <!-- Блок выбора режима игры -->
-    <VBox alignment="CENTER" spacing="15">
-        <Text text="Выберите режим:"
-              fill="WHITE">
+    <!-- блок выбора режима игры -->
+    <VBox alignment="CENTER" spacing="20" style="-fx-padding: 25; -fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 20;">
+        <Text text="Выберите режим игры:"
+              fill="#DB7093">
             <font>
-                <Font name="Arial" size="18.0" />
+                <Font name="Arial" size="18.0"/>
             </font>
         </Text>
 
-        <HBox alignment="CENTER" spacing="20">
+        <HBox alignment="CENTER" spacing="40">
             <!-- Кнопка "Создать игру" (Сервер) -->
-            <Button text="Создать игру"
-                    prefWidth="150"
-                    prefHeight="50"
-                    onAction="#handleCreateGame"
-                    style="-fx-background-color: #2196F3; -fx-text-fill: white;
-                           -fx-font-size: 14; -fx-font-weight: bold;"/>
+            <VBox alignment="CENTER" spacing="10">
+                <Button text="✨ Создать игру"
+                        prefWidth="200"
+                        prefHeight="60"
+                        onAction="#handleCreateGame"
+                        style="-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093);
+                               -fx-text-fill: white;
+                               -fx-font-size: 16;
+                               -fx-font-weight: bold;
+                               -fx-background-radius: 30;
+                               -fx-border-color: #FFC0CB;
+                               -fx-border-width: 3;
+                               -fx-border-radius: 27;">
+                    <font>
+                        <Font name="Arial" size="16" />
+                    </font>
+                </Button>
+                <Label text="Будьте хостом для друга"
+                       textFill="#8B6969"
+                       style="-fx-font-size: 12;">
+                    <font>
+                        <Font name="Arial" size="12" />
+                    </font>
+                </Label>
+            </VBox>
 
             <!-- Кнопка "Подключиться" (Клиент) -->
-            <Button text="Подключиться"
-                    prefWidth="150"
-                    prefHeight="50"
-                    onAction="#handleConnectToGame"
-                    style="-fx-background-color: #FF9800; -fx-text-fill: white;
-                           -fx-font-size: 14; -fx-font-weight: bold;"/>
+            <VBox alignment="CENTER" spacing="10">
+                <Button text="🔗 Подключиться"
+                        prefWidth="200"
+                        prefHeight="60"
+                        onAction="#handleConnectToGame"
+                        style="-fx-background-color: linear-gradient(to bottom, #DDA0DD, #BA55D3);
+                               -fx-text-fill: white;
+                               -fx-font-size: 16;
+                               -fx-font-weight: bold;
+                               -fx-background-radius: 30;
+                               -fx-border-color: #E6E6FA;
+                               -fx-border-width: 3;
+                               -fx-border-radius: 27;">
+                    <font>
+                        <Font name="Arial" size="16" />
+                    </font>
+                </Button>
+                <Label text="Присоединитесь к другу"
+                       textFill="#8B6969"
+                       style="-fx-font-size: 12;">
+                    <font>
+                        <Font name="Arial" size="12" />
+                    </font>
+                </Label>
+            </VBox>
         </HBox>
     </VBox>
+
+    <!-- Декоративный элемент -->
+    <Text text="🌸🌸🌸🌸🌸🌸🌸🌸🌸"
+          fill="#FFB6C1">
+        <font>
+            <Font name="Arial" size="28" />
+        </font>
+    </Text>
 
 </VBox>

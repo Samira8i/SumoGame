@@ -1,4 +1,3 @@
-
 package sumogame;
 
 import javafx.application.Application;
@@ -14,7 +13,7 @@ import sumogame.model.CharacterType;
 import sumogame.model.GameState;
 
 public class Main extends Application {
-    private Stage primaryStage; //главное окно приложения
+    private Stage primaryStage; // главное окно приложения
     private GameController gameController;
     private boolean isServerMode;
 
@@ -23,21 +22,21 @@ public class Main extends Application {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Сумо Игра");
 
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinHeight(700);
+
         showCharacterSelection();
         primaryStage.show();
     }
 
     private void showCharacterSelection() {
         try {
-            //Метод для отображения экрана выбора персонажа. Создает FXMLLoader для загрузки FXML файла
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/character-selection.fxml"));
-            //Загружает FXML файл и создает дерево элементов интерфейса
             Parent root = loader.load();
-            //Получает контроллер, связанный с FXML файлом, и передает ему ссылку на главный класс.
             CharacterSelectionController controller = loader.getController();
             controller.setMain(this);
 
-            Scene scene = new Scene(root, 800, 600);
+            Scene scene = new Scene(root, 1000, 700); // Увеличиваем размер сцены
             primaryStage.setScene(scene);
 
         } catch (Exception e) {
@@ -45,6 +44,7 @@ public class Main extends Application {
             showErrorScreen(e);
         }
     }
+
     public void returnToMainMenu() {
         if (gameController != null) {
             gameController.stop();
@@ -55,7 +55,6 @@ public class Main extends Application {
 
     private void showError(String message) {
         System.err.println(message);
-        // Можно добавить диалоговое окно с ошибкой
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                 javafx.scene.control.Alert.AlertType.ERROR
         );
@@ -67,7 +66,6 @@ public class Main extends Application {
     }
 
     private void showErrorScreen(Exception e) {
-        // Простой экран с ошибкой
         javafx.scene.layout.VBox vbox = new javafx.scene.layout.VBox();
         vbox.setStyle("-fx-padding: 20; -fx-alignment: center;");
 
@@ -82,28 +80,30 @@ public class Main extends Application {
         vbox.getChildren().addAll(label, button);
         primaryStage.setScene(new Scene(vbox, 400, 200));
     }
+
     public static void main(String[] args) {
         launch(args);
     }
-    public void showMatchResults(GameState gameState) {
+
+    public void showMatchResults(GameState gameState, boolean isLocalPlayer1) {
         try {
+            System.out.println("Main.showMatchResults: передаем isLocalPlayer1 = " + isLocalPlayer1 +
+                    " (сервер=" + isLocalPlayer1 + ", клиент=" + (!isLocalPlayer1) + ")");
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/results-screen.fxml"));
             Parent root = loader.load();
 
             ResultsScreenController controller = loader.getController();
             controller.setMain(this);
 
-            // Передаем GameState для отображения результатов
             if (gameState != null) {
+                controller.setIsLocalPlayer1(isLocalPlayer1);
                 controller.setGameState(gameState);
-                // Передаем информацию о том, кто локальный игрок
-                controller.setIsServer(isServerMode);
             }
 
-            Scene scene = new Scene(root, 800, 600);
+            Scene scene = new Scene(root, 1000, 700);
             primaryStage.setScene(scene);
 
-            // Очищаем gameController
             if (gameController != null) {
                 gameController.stop();
                 gameController = null;
@@ -116,36 +116,31 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * Запуск игры в режиме сервера
-     */
+
     public void startAsServer(CharacterType characterType) {
         this.isServerMode = true;
-        System.out.println("Запуск в режиме СЕРВЕРА с персонажем: " + characterType.getName());
+        System.out.println("Запуск в режиме сервера с персонажем: " + characterType.getName());
 
         try {
-            // Загружаем игровой экран
+            // загружаю игровой экран
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/game-screen.fxml"));
             Parent root = loader.load();
 
-            // Получаем контроллер игрового экрана
             GameScreenController gameScreenController = loader.getController();
 
-            // Создаем и настраиваем GameController
+            // создаю и настраиваю GameController
             gameController = new GameController(true, characterType, null);
             gameController.setMainApp(this); // Передаем ссылку на Main
 
-            // Передаем GameController в GameScreenController
+            // передаем GameController в GameScreenController
             gameScreenController.setGameController(gameController);
 
-            // Запускаем игру
+            // запускаем сетевое соединение
             gameController.startGame();
-
-            // Передаем GameRenderer в GameController
             gameController.setGameRenderer(gameScreenController.getGameRenderer());
 
             // Показываем игровой экран
-            Scene gameScene = new Scene(root, 800, 600);
+            Scene gameScene = new Scene(root, 1000, 700);
             gameScene.setOnKeyPressed(gameScreenController::handleKeyPressed);
             primaryStage.setScene(gameScene);
 
@@ -155,36 +150,33 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * Запуск в режиме клиента
-     */
+
     public void startAsClient(CharacterType characterType, String serverAddress) {
         this.isServerMode = false;
         System.out.println("Подключение к серверу " + serverAddress + " с персонажем: " + characterType.getName());
 
         try {
-            // Загружаем игровой экран
+            // загружаем игровой экран
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/game-screen.fxml"));
             Parent root = loader.load();
 
-            // Получаем контроллер игрового экрана
+            // получаем контроллер игрового экрана
             GameScreenController gameScreenController = loader.getController();
 
-            // Создаем и настраиваем GameController
+            // создаем и настраиваем GameController
             gameController = new GameController(false, characterType, serverAddress);
             gameController.setMainApp(this); // Передаем ссылку на Main
 
-            // Передаем GameController в GameScreenController
+            // передаем GameController в GameScreenController
             gameScreenController.setGameController(gameController);
 
-            // Запускаем игру
+            // запускаем сетевое соединение
             gameController.startGame();
 
-            // Передаем GameRenderer в GameController
             gameController.setGameRenderer(gameScreenController.getGameRenderer());
 
-            // Показываем игровой экран
-            Scene gameScene = new Scene(root, 800, 600);
+            // игровой экран
+            Scene gameScene = new Scene(root, 1000, 700);
             gameScene.setOnKeyPressed(gameScreenController::handleKeyPressed);
             primaryStage.setScene(gameScene);
 

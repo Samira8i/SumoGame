@@ -1,16 +1,23 @@
 package sumogame.model;
 
-import sumogame.util.DebugLogger;
-
 public enum Direction {
-    UP, DOWN, LEFT, RIGHT;
+    UP(0, -1),
+    DOWN(0, 1),
+    LEFT(-1, 0),
+    RIGHT(1, 0);
 
-    public static Direction fromString(String direction) {
-        try {
-            return Direction.valueOf(direction.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            DebugLogger.error("Неизвестное направление: " + direction);
-            return null;
-        }
+    private final int dx;
+    private final int dy;
+
+    Direction(int dx, int dy) {
+        this.dx = dx;
+        this.dy = dy;
+    }
+
+    public double[] calculateNewPosition(double currentX, double currentY, double speed) {
+        return new double[]{
+                currentX + (dx * speed),
+                currentY + (dy * speed)
+        };
     }
 }

@@ -3,12 +3,17 @@ package sumogame.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.InnerShadow;
 import sumogame.Main;
 import sumogame.model.CharacterType;
 
@@ -16,32 +21,57 @@ import sumogame.model.CharacterType;
  * Контроллер для экрана выбора персонажа
  */
 public class CharacterSelectionController {
-    //@FXML указывает, что поле связано с элементом в FXML файле. HBox - горизонтальный контейнер для карточек персонажей.
+
     @FXML
     private HBox charactersContainer; // Ссылка на контейнер из FXML
-
     private Main main; // Ссылка на главное приложение
     private CharacterType selectedCharacter; // Выбранный персонаж
 
-    /**
-     * Устанавливает ссылку на главное приложение
-     */
+    // Эффекты для дизайна
+    private DropShadow cardShadow;
+    private DropShadow buttonShadow;
+    private DropShadow textShadow;
+
+    public CharacterSelectionController() {
+        createEffects();
+    }
+
+    private void createEffects() {
+        // Тень для карточек
+        cardShadow = new DropShadow();
+        cardShadow.setColor(Color.rgb(255, 105, 180, 0.4));
+        cardShadow.setRadius(20);
+        cardShadow.setOffsetX(0);
+        cardShadow.setOffsetY(5);
+        cardShadow.setBlurType(BlurType.GAUSSIAN);
+
+        // Тень для кнопок
+        buttonShadow = new DropShadow();
+        buttonShadow.setColor(Color.rgb(219, 112, 147, 0.6));
+        buttonShadow.setRadius(10);
+        buttonShadow.setOffsetX(2);
+        buttonShadow.setOffsetY(2);
+
+        // Тень для текста
+        textShadow = new DropShadow();
+        textShadow.setColor(Color.rgb(255, 182, 193, 0.8));
+        textShadow.setRadius(3);
+        textShadow.setOffsetX(1);
+        textShadow.setOffsetY(1);
+    }
+
+
     public void setMain(Main main) {
         this.main = main;
         initialize(); // Инициализируем когда Main установлен
     }
 
-    /**
-     * Инициализация контроллера
-     */
     private void initialize() {
         this.selectedCharacter = CharacterType.PINK; // Персонаж по умолчанию
         createCharacterCards(); // Создаем карточки персонажей
     }
 
-    /**
-     * Создает карточки для всех типов персонажей
-     */
+
     private void createCharacterCards() {
         // Очищаем контейнер
         charactersContainer.getChildren().clear();
@@ -56,52 +86,87 @@ public class CharacterSelectionController {
         updateSelectionUI();
     }
 
-    /**
-     * Создает одну карточку персонажа
-     */
+
     private VBox createCharacterCard(CharacterType type) {
-        VBox card = new VBox(10); // Вертикальный контейнер с отступом 10
-        card.setAlignment(javafx.geometry.Pos.CENTER); // Выравнивание по центру
-        card.setPadding(new javafx.geometry.Insets(15)); // Внутренние отступы
-        card.setStyle("-fx-background-color: #3c3c3c; -fx-background-radius: 10;");
-        card.setUserData(type); // Сохраняем тип персонажа в карточке
+        VBox card = new VBox(15);
+        card.setAlignment(javafx.geometry.Pos.CENTER);
+        card.setPadding(new javafx.geometry.Insets(25, 20, 25, 20));
+        card.setEffect(cardShadow);
+        card.setUserData(type);
 
-        // Круг - визуальное представление персонажа
-        Circle characterCircle = new Circle(40); // Круг радиусом 40
+        // Фон карточки с градиентом
+        String cardStyle = "-fx-background-color: linear-gradient(to bottom, #FFF0F5, #FFE4E1); " +
+                "-fx-background-radius: 20; " +
+                "-fx-border-color: #FFB6C1; " +
+                "-fx-border-width: 2; " +
+                "-fx-border-radius: 18;";
+        card.setStyle(cardStyle);
+
+
+        Circle characterCircle = new Circle(50);
+
+        InnerShadow innerShadow = new InnerShadow();
+        innerShadow.setColor(Color.rgb(0, 0, 0, 0.3));
+        innerShadow.setRadius(15);
+        innerShadow.setOffsetX(2);
+        innerShadow.setOffsetY(2);
+        characterCircle.setEffect(innerShadow);
+
         // Устанавливаем цвет в зависимости от типа персонажа
-        String colorName = type.name(); // PINK, GREEN, BLUE
-
-        if ("PINK".equals(colorName)) {
-            characterCircle.setFill(Color.PINK);
-        } else if ("GREEN".equals(colorName)) {
-            characterCircle.setFill(Color.GREEN);
-        } else if ("BLUE".equals(colorName)) {
-            characterCircle.setFill(Color.LIGHTBLUE);
-        } else {
-            characterCircle.setFill(Color.GRAY);
+        switch (type) {
+            case PINK:
+                characterCircle.setFill(Color.web("#FFB6C1"));
+                break;
+            case GREEN:
+                characterCircle.setFill(Color.web("#98FB98"));
+                break;
+            case BLUE:
+                characterCircle.setFill(Color.web("#ADD8E6"));
+                break;
         }
 
         // Название персонажа
         Text name = new Text(type.getName());
-        name.setStyle("-fx-fill: white; -fx-font-size: 14;");
+        name.setFont(Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
+        name.setFill(Color.web("#DB7093"));
+        name.setEffect(textShadow);
 
-        // Название способности
-        Text ability = new Text("Способность: " + type.getAbilityName());
-        ability.setStyle("-fx-fill: lightblue; -fx-font-size: 12;");
+        Text ability = new Text("💫 " + type.getAbilityName());
+        ability.setFont(Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 14));
+        ability.setFill(Color.web("#C71585"));
 
-        // Описание способности
         Text description = new Text(type.getAbilityDescription());
-        description.setStyle("-fx-fill: gray; -fx-font-size: 10;");
-        description.setWrappingWidth(150); // Перенос текста
+        description.setFont(Font.font("Arial", 12));
+        description.setFill(Color.web("#8B6969"));
+        description.setWrappingWidth(180);
 
-        // Кнопка выбора
-        Button selectButton = new Button("Выбрать");
-        selectButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        Button selectButton = new Button("✨ Выбрать");
+        selectButton.setPrefWidth(120);
+        selectButton.setPrefHeight(40);
+        selectButton.setFont(Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 14));
+        selectButton.setEffect(buttonShadow);
+
+        String buttonStyle = "-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093); " +
+                "-fx-text-fill: white; " +
+                "-fx-background-radius: 15; " +
+                "-fx-border-color: #FFC0CB; " +
+                "-fx-border-width: 2; " +
+                "-fx-border-radius: 13;";
+        selectButton.setStyle(buttonStyle);
+
+        // Эффект при наведении
+        selectButton.setOnMouseEntered(e -> {
+            selectButton.setStyle(buttonStyle + " -fx-background-color: linear-gradient(to bottom, #FF1493, #C71585);");
+        });
+
+        selectButton.setOnMouseExited(e -> {
+            selectButton.setStyle(buttonStyle);
+        });
 
         // Обработчик нажатия на кнопку
         selectButton.setOnAction(e -> {
-            selectedCharacter = type; // Запоминаем выбранного персонажа
-            updateSelectionUI(); // Обновляем подсветку
+            selectedCharacter = type;
+            updateSelectionUI();
             System.out.println("Выбран персонаж: " + type.getName());
         });
 
@@ -111,9 +176,7 @@ public class CharacterSelectionController {
         return card;
     }
 
-    /**
-     * Обновляет подсветку выбранного персонажа
-     */
+
     private void updateSelectionUI() {
         // Проходим по всем карточкам в контейнере
         for (var node : charactersContainer.getChildren()) {
@@ -122,18 +185,26 @@ public class CharacterSelectionController {
 
             // Если это выбранный персонаж - подсвечиваем
             if (cardType == selectedCharacter) {
-                card.setStyle("-fx-background-color: #4c4c4c; -fx-border-color: #4CAF50; -fx-border-width: 2; -fx-border-radius: 10;");
+                String selectedStyle = "-fx-background-color: linear-gradient(to bottom, #FFE4E9, #FFD1DC); " +
+                        "-fx-background-radius: 20; " +
+                        "-fx-border-color: #FF69B4; " +
+                        "-fx-border-width: 3; " +
+                        "-fx-border-radius: 18; " +
+                        "-fx-effect: dropshadow(gaussian, #FF69B4, 30, 0.5, 0, 5);";
+                card.setStyle(selectedStyle);
             } else {
-                // Иначе - обычный стиль
-                card.setStyle("-fx-background-color: #3c3c3c; -fx-background-radius: 10;");
+                String normalStyle = "-fx-background-color: linear-gradient(to bottom, #FFF0F5, #FFE4E1); " +
+                        "-fx-background-radius: 20; " +
+                        "-fx-border-color: #FFB6C1; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 18; " +
+                        "-fx-effect: dropshadow(gaussian, rgba(255,105,180,0.4), 20, 0, 0, 5);";
+                card.setStyle(normalStyle);
             }
         }
     }
 
-    /**
-     * Обработчик кнопки "Создать игру" (из FXML)
-     */
-    @FXML //todo: оч странно что где то обработчик вызывается в контроллере а где то  в fxml
+    @FXML
     private void handleCreateGame() {
         System.out.println("Нажата кнопка: Создать игру");
         System.out.println("Выбран персонаж: " + selectedCharacter.getName());
@@ -145,21 +216,28 @@ public class CharacterSelectionController {
         }
     }
 
-    /**
-     * Обработчик кнопки "Подключиться" (из FXML)
-     */
+
     @FXML
     private void handleConnectToGame() {
         System.out.println("Нажата кнопка: Подключиться");
         System.out.println("Выбран персонаж: " + selectedCharacter.getName());
 
-        // Создаем диалог для ввода адреса сервера
+        // диалог для ввода адреса сервера
         TextInputDialog dialog = new TextInputDialog("localhost");
-        dialog.setTitle("Подключение к серверу");
-        dialog.setHeaderText("Введите адрес сервера:");
+        dialog.setTitle("🌸 Подключение к серверу");
+        dialog.setHeaderText("Введите адрес сервера для подключения:");
         dialog.setContentText("Адрес:");
 
-        // Показываем диалог и ждем результат
+        dialog.getDialogPane().setStyle("-fx-background-color: #FFF0F5;");
+        dialog.getDialogPane().lookupButton(ButtonType.OK).setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093); " +
+                        "-fx-text-fill: white; -fx-font-weight: bold;"
+        );
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #D8BFD8, #DDA0DD); " +
+                        "-fx-text-fill: white; -fx-font-weight: bold;"
+        );
+
         dialog.showAndWait().ifPresent(address -> {
             if (address != null && !address.trim().isEmpty()) {
                 if (main != null) {
@@ -171,14 +249,19 @@ public class CharacterSelectionController {
         });
     }
 
-    /**
-     * Показывает сообщение об ошибке
-     */
+
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Ошибка");
+        alert.setTitle("🌸 Ошибка");
         alert.setHeaderText(null);
         alert.setContentText(message);
+
+        // Стилизация алерта
+        alert.getDialogPane().setStyle("-fx-background-color: #FFF0F5;");
+        Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setStyle("-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093); " +
+                "-fx-text-fill: white; -fx-font-weight: bold;");
+
         alert.showAndWait();
     }
 }
