@@ -86,16 +86,15 @@ public class GameState {
     }
 
     public int getMatchWinner() {
-        // Если matchWinner уже установлен, используем его
+        // Если matchWinner уже установлен, использую его
         if (matchWinner != -1) {
             return matchWinner;
         }
-        // Иначе вычисляем по очкам
+        // Иначе вычисляю по очкам
         if (player1Score > player2Score) return 1;
         if (player2Score > player1Score) return 2;
         return 0;
     }
-    // В классе GameState добавьте:
     public void setMatchWinner(int matchWinner) {
         this.matchWinner = matchWinner;
     }

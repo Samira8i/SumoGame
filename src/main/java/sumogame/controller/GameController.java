@@ -226,7 +226,7 @@ public class GameController {
 
     // Метод, вызываемый GameEngine при завершении матча
     public void showMatchResults() {
-        System.out.println("📊 GameController: Показываем результаты...");
+        System.out.println(" GameController: Показываем результаты...");
         if (mainApp != null) {
             GameState currentState = getCurrentGameState();
             System.out.println("GameController.showMatchResults: isServer = " + isServer);
@@ -269,7 +269,18 @@ public class GameController {
     public boolean isWaitingForOpponent() {
         return !gameStarted;
     }
+    public void handleRoundResult(int winnerId) {
+        if (gameEngine != null) {
+            gameEngine.handleRoundResult(winnerId);
+        }
+    }
 
+    // Метод для отправки результатов раунда (для GameEngine)
+    public void notifyRoundResult(int winnerId) {
+        if (networkManager != null) {
+            networkManager.notifyRoundResult(winnerId);
+        }
+    }
     public String getServerAddress() {
         return serverAddress != null ? serverAddress : "localhost";
     }

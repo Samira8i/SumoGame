@@ -33,14 +33,14 @@ public class GameScreenController {
     public void initialize() {
         System.out.println("GameScreenController: Инициализация");
 
-        // Создаем рендерер
+        //  рендерер
         gameRenderer = new GameRenderer(gameCanvas);
 
-        // Фиксируем размер канваса
+        // размер канваса
         gameCanvas.setWidth(900);
         gameCanvas.setHeight(480);
 
-        // Устанавливаем начальные значения
+        // начальные значения
         Platform.runLater(() -> {
             roundTimeLabel.setText("⏱️ 60с");
             roundTimeLabel.setTextFill(Color.web("#FF69B4"));
@@ -50,12 +50,12 @@ public class GameScreenController {
             powerUpStatusLabel.setText("✨ Способность: ГОТОВА");
         });
 
-        // Запускаем таймер обновления UI
+        //  таймер обновления UI
         startUIUpdateTimer();
     }
 
     private void startUIUpdateTimer() {
-        uiUpdateTimer = new AnimationTimer() {
+        uiUpdateTimer = new AnimationTimer() { //спец таймер, вызываетсч каждый кадр
             @Override
             public void handle(long now) {
                 updateUI();
@@ -149,8 +149,7 @@ public class GameScreenController {
 
     public void setGameController(GameController controller) {
         this.gameController = controller;
-        // Больше не устанавливаем коллбэки
-        requestFocus();
+        requestFocus(); //фокус для контейнера (чтобы клавиши работали)
     }
 
     private void updatePowerUpUI(sumogame.model.GameState state) {

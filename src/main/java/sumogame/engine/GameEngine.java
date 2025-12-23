@@ -18,7 +18,7 @@ public class GameEngine {
     public GameEngine(CharacterType localCharacter, boolean isServer, GameController controller) {
         this.localCharacter = localCharacter;
         this.isServer = isServer;
-        this.gameController = controller;  // Сохраняем ссылку
+        this.gameController = controller;
         this.roundEnded = false;
         this.roundCompletionInProgress = false;
         initializeGameState();
@@ -60,25 +60,22 @@ public class GameEngine {
 
         gameState.setGameActive(true);
         gameInitialized = true;
-
+        //запусчк задержки в отдельном потоке
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
                 Platform.runLater(() -> {
-                    System.out.println("✅ Игра началась!");
-                    System.out.println("🚀 Раунд 1 из 3 - " + gameState.getCurrentArena().getType().getName());
+                    System.out.println("Игра началась!");
+                    System.out.println("Раунд 1 из 3 - " + gameState.getCurrentArena().getType().getName());
                 });
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }).start();
-
-        System.out.println("=== ИГРА НАЧАЛАСЬ ===");
-        System.out.println("Раунд: 1/3");
         System.out.println("Арена: " + gameState.getCurrentArena().getType().getName());
         System.out.println("Счет: 0 - 0");
     }
-
+    //Обновление персонажа противника (получено из сети)
     public void updateOpponentCharacter(CharacterType opponentCharacter) {
         if (isServer) {
             gameState.getPlayer2().setType(opponentCharacter);
@@ -104,15 +101,15 @@ public class GameEngine {
                 (isServer ? gameState.getPlayer1() : gameState.getPlayer2()) :
                 (isServer ? gameState.getPlayer2() : gameState.getPlayer1());
 
-        playerToMove.move(direction);
-        constrainPlayerToArena(playerToMove);
-        checkCollisions();
+        playerToMove.move(direction); //движение
+        constrainPlayerToArena(playerToMove); //ограничение
+        checkCollisions(); // проверка столкновения
 
         if (!roundCompletionInProgress && !roundEnded) {
             checkIfPlayerOut();
         }
     }
-
+    //Ограничение движения игрока границами арены
     private void constrainPlayerToArena(Player player) {
         double x = player.getX();
         double y = player.getY();
@@ -146,7 +143,7 @@ public class GameEngine {
 
             double force1 = p1.getCurrentStrength() * 3.0;
             double force2 = p2.getCurrentStrength() * 3.0;
-
+            //применение отталкивания
             p1.setPosition(p1.getX() - nx * force2, p1.getY() - ny * force2);
             p2.setPosition(p2.getX() + nx * force1, p2.getY() + ny * force1);
 
@@ -184,7 +181,7 @@ public class GameEngine {
                 winnerId = 1;
                 System.out.println("Результат: ПОБЕДИЛ ИГРОК 1");
             }
-
+            // завершение райнда с задержкой
             new Thread(() -> {
                 try {
                     Thread.sleep(50);
@@ -208,7 +205,7 @@ public class GameEngine {
         roundEnded = true;
         gameState.setGameActive(false);
 
-        System.out.println("=== РАУНД " + gameState.getRoundNumber() + " ЗАВЕРШЕН ===");
+        System.out.println("РАУНД " + gameState.getRoundNumber() + " ЗАВЕРШЕН");
         System.out.println("Победитель раунда: " +
                 (winnerId == 1 ? "Игрок 1" : winnerId == 2 ? "Игрок 2" : "Ничья"));
 
@@ -223,16 +220,12 @@ public class GameEngine {
 
         System.out.println("Счет: " + gameState.getPlayer1Score() + " - " + gameState.getPlayer2Score());
 
-        String roundResult;
-        if (winnerId == 1) {
-            roundResult = "Раунд " + gameState.getRoundNumber() + ": Победил Игрок 1";
-        } else if (winnerId == 2) {
-            roundResult = "Раунд " + gameState.getRoundNumber() + ": Победил Игрок 2";
-        } else {
-            roundResult = "Раунд " + gameState.getRoundNumber() + ": Ничья!";
+        // сервер отправляет результат раунда клиентам
+        if (isServer && gameController != null) {
+            // Отправляем результат через NetworkManager
+            System.out.println("Сервер отправляет результат раунда клиентам: " + winnerId);
+            gameController.notifyRoundResult(winnerId);
         }
-
-        System.out.println("🏁 " + roundResult);
 
         // Проверяем, завершен ли матч
         boolean matchFinished = false;
@@ -306,6 +299,33 @@ public class GameEngine {
         roundCompletionInProgress = false;
     }
 
+    // Метод для обработки результатов раунда от сервера (для клиентов)
+    public void handleRoundResult(int winnerId) {
+        if (isServer) {
+            System.out.println("Сервер игнорирует ROUND_RESULT (он его отправляет)");
+            return;
+        }
+
+        System.out.println("Клиент получил результат раунда от сервера: " + winnerId);
+
+        // Если раунд еще не завершен локально, завершаем его
+        if (!roundEnded) {
+            System.out.println("Завершаю раунд по команде сервера");
+            endRound(winnerId);
+        } else {
+            System.out.println("Раунд уже завершен локально, сверяю результат");
+            // Проверяем, совпадает ли результат с локальным
+            int currentRoundIndex = gameState.getRoundNumber() - 1;
+            int localWinner = gameState.getRoundWinners()[currentRoundIndex];
+
+            if (localWinner != winnerId) {
+                System.out.println("РАСХОЖДЕНИЕ РЕЗУЛЬТАТОВ! Локально: " + localWinner + ", от сервера: " + winnerId);
+                // Корректируем результат согласно серверу
+                gameState.setRoundWinner(currentRoundIndex, winnerId);
+            }
+        }
+    }
+
     private void startNewRound() {
         if (gameState.isMatchFinished() || gameState.allRoundsPlayed()) {
             System.out.println("Матч завершен, новый раунд не запускается");
@@ -323,7 +343,7 @@ public class GameEngine {
             showMatchResults();
             return;
         }
-
+        // сброс таймера и сотсояния для нового райнда
         roundTimer = GameConfig.ROUND_DURATION;
         gameState.setRoundTime(roundTimer);
         gameState.setGameActive(true);
@@ -343,7 +363,7 @@ public class GameEngine {
         System.out.println("🚀 Раунд " + gameState.getRoundNumber() + " из 3 - " +
                 gameState.getCurrentArena().getType().getName());
     }
-
+    // Сброс позиций игроков для новой арены
     private void resetPlayerPositionsForArena() {
         Arena arena = gameState.getCurrentArena();
         gameState.getPlayer1().resetForNewRound(arena.getPlayer1StartX(), arena.getPlayer1StartY());
@@ -355,9 +375,9 @@ public class GameEngine {
     }
 
     private void showMatchResults() {
-        System.out.println("=== ПОКАЗЫВАЕМ РЕЗУЛЬТАТЫ МАТЧА ===");
+        System.out.println("ПОКАЗЫВАЕМ РЕЗУЛЬТАТЫ МАТЧА");
         if (gameController != null) {
-            gameController.showMatchResults();  // Прямой вызов!
+            gameController.showMatchResults();
         }
     }
 
@@ -375,7 +395,7 @@ public class GameEngine {
                     Thread.sleep(50);
                     Platform.runLater(() -> {
                         if (!roundEnded) {
-                            endRound(0);
+                            endRound(0); // Ничья
                         }
                     });
                 } catch (InterruptedException e) {
@@ -387,6 +407,7 @@ public class GameEngine {
         gameState.getPlayer1().update(deltaTime);
         gameState.getPlayer2().update(deltaTime);
     }
+
 
     public boolean activatePowerUp() {
         if (!gameState.isGameActive() || roundEnded || gameState.isMatchFinished()) return false;
@@ -409,7 +430,6 @@ public class GameEngine {
         System.out.println("Противник использовал способность!");
     }
 
-    // Геттеры
     public GameState getGameState() {
         return gameState;
     }

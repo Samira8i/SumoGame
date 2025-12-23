@@ -76,9 +76,6 @@ public class GameRenderer {
         if (state.getPlayer2() != null) {
             drawPlayer(state.getPlayer2());
         }
-
-        // УБИРАЕМ вызов drawUI - UI рисуется через FXML
-        // drawUI(state);
     }
 
     private void drawBackground() {
@@ -110,7 +107,7 @@ public class GameRenderer {
         double centerX = width / 2;
         double centerY = height / 2;
 
-        // ВАЖНО: Используем радиус из объекта Arena, но масштабируем для канваса
+      // использую радиус из объекта Arena, но масштабируем для канваса
         double arenaRadius = arena.getRadius();
         double scale = Math.min(width / arena.getWidth(), height / arena.getHeight());
         double radius = arenaRadius * scale;
@@ -390,10 +387,5 @@ public class GameRenderer {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.fillText("Игрок " + player.getPlayerId(), x, y + 5);
-    }
-
-    public void resize(double width, double height) {
-        canvas.setWidth(width);
-        canvas.setHeight(height);
     }
 }
