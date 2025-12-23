@@ -17,18 +17,15 @@ public class Message {
     private final Type type;
     private final String data;
     private final int playerId;
-    private final long timestamp;
 
     public Type getType() { return type; }
     public String getData() { return data; }
     public int getPlayerId() { return playerId; }
-    public long getTimestamp() { return timestamp; }
 
     public Message(Type type, String data, int playerId) {
         this.type = type;
         this.data = data;
         this.playerId = playerId;
-        this.timestamp = System.currentTimeMillis();
     }
 
     public String toJson() {
@@ -40,7 +37,7 @@ public class Message {
     }
 
     public boolean isValid() {
-        return type != null && data != null && timestamp > 0;
+        return type != null && data != null;
     }
 
     @Override

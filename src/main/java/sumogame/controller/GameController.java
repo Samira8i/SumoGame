@@ -4,12 +4,11 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import sumogame.Main;
 import sumogame.engine.GameEngine;
-import sumogame.engine.GameEventListener;
 import sumogame.model.*;
 import sumogame.network.NetworkManager;
 import sumogame.view.GameRenderer;
 
-public class GameController implements GameEventListener {
+public class GameController {
     private GameEngine gameEngine;
     private NetworkManager networkManager;
     private GameRenderer gameRenderer;
@@ -18,6 +17,7 @@ public class GameController implements GameEventListener {
     private boolean isServer;
     private String serverAddress;
     private Main mainApp;
+    private int port;
 
     // Состояние подключения
     private boolean gameStarted = false;
@@ -30,23 +30,25 @@ public class GameController implements GameEventListener {
     // Флаг для отправки персонажа
     private boolean characterSent = false;
 
-    public GameController(boolean isServer, CharacterType myCharacter, String serverAddress) {
+    public GameController(boolean isServer, CharacterType myCharacter, String serverAddress, int port) {
         this.isServer = isServer;
         this.serverAddress = serverAddress;
         this.myCharacter = myCharacter;
+        this.port = port;
 
         System.out.println("Режим: " + (isServer ? "сервер" : "клиент"));
         System.out.println("Мой персонаж: " + myCharacter.getName());
 
-        // Инициализация движка
-        this.gameEngine = new GameEngine(myCharacter, isServer);
-        this.gameEngine.setGameEventListener(this);
+        // Инициализация движка с передачей себя в конструктор
+        this.gameEngine = new GameEngine(myCharacter, isServer, this);
 
         // Инициализация сети
         this.networkManager = new NetworkManager(this, isServer);
         this.networkManager.setMyCharacter(myCharacter);
     }
-
+    public int getPort() {
+        return port;
+    }
     public void setMainApp(Main main) {
         this.mainApp = main;
     }
@@ -105,52 +107,6 @@ public class GameController implements GameEventListener {
         if (!gameStarted) return;
 
         gameEngine.processOpponentPowerUp();
-    }
-
-    @Override
-    public void onGameStateUpdated(GameState state) {
-        // Больше не вызываем коллбэк, GameScreenController обновляет UI через свой AnimationTimer
-        // UI обновляется в GameScreenController.updateUI() через собственный таймер
-    }
-
-    @Override
-    public void onGameEvent(String eventType, String data) {
-        Platform.runLater(() -> {
-            System.out.println("Событие игры: " + eventType + " - " + data);
-
-            switch (eventType) {
-                case "GAME_STARTED":
-                    System.out.println("✅ Игра началась!");
-                    break;
-                case "ROUND_STARTED":
-                    System.out.println("🚀 " + data);
-                    break;
-                case "ROUND_ENDED":
-                    System.out.println("🏁 " + data);
-                    break;
-                case "MATCH_FINISHED":
-                    System.out.println("🎮 " + data);
-                    System.out.println("GameController: Победитель матча = " + getCurrentGameState().getMatchWinner());
-                    System.out.println("GameController: Сервер? " + isServer);
-                    break;
-                case "SHOW_RESULTS":
-                    System.out.println("📊 Показываем результаты...");
-                    // Показываем экран результатов через Main
-                    if (mainApp != null) {
-                        GameState currentState = getCurrentGameState();
-                        System.out.println("GameController.SHOW_RESULTS: isServer = " + isServer);
-                        System.out.println("GameController.SHOW_RESULTS: Передаем isLocalPlayer1 = " + isServer);
-
-                        boolean isLocalPlayer1 = isServer; // Сервер = Player1, Клиент = Player2
-                        mainApp.showMatchResults(currentState, isLocalPlayer1);
-                    }
-                    break;
-                case "PLAYER_DISCONNECTED":
-                    System.out.println("Противник отключился!");
-                    break;
-            }
-            // Больше не вызываем коллбэк onGameEvent
-        });
     }
 
     public GameState getCurrentGameState() {
@@ -266,6 +222,19 @@ public class GameController implements GameEventListener {
 
         // Запускаем игровой цикл
         startGameLoop();
+    }
+
+    // Метод, вызываемый GameEngine при завершении матча
+    public void showMatchResults() {
+        System.out.println("📊 GameController: Показываем результаты...");
+        if (mainApp != null) {
+            GameState currentState = getCurrentGameState();
+            System.out.println("GameController.showMatchResults: isServer = " + isServer);
+            System.out.println("GameController.showMatchResults: Передаем isLocalPlayer1 = " + isServer);
+
+            boolean isLocalPlayer1 = isServer; // Сервер = Player1, Клиент = Player2
+            mainApp.showMatchResults(currentState, isLocalPlayer1);
+        }
     }
 
     public void startGame() {

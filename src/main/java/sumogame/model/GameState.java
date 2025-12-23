@@ -11,6 +11,7 @@ public class GameState {
     private boolean matchFinished = false;
     private Arena currentArena;
     private int[] roundWinners;
+    private int matchWinner = -1;
 
     public GameState() {
         roundWinners = new int[GameConfig.TOTAL_ROUNDS];
@@ -81,12 +82,21 @@ public class GameState {
     }
 
     public boolean allRoundsPlayed() {
-        return roundNumber > GameConfig.TOTAL_ROUNDS;
+        return roundNumber >= GameConfig.TOTAL_ROUNDS;
     }
 
     public int getMatchWinner() {
+        // Если matchWinner уже установлен, используем его
+        if (matchWinner != -1) {
+            return matchWinner;
+        }
+        // Иначе вычисляем по очкам
         if (player1Score > player2Score) return 1;
         if (player2Score > player1Score) return 2;
         return 0;
+    }
+    // В классе GameState добавьте:
+    public void setMatchWinner(int matchWinner) {
+        this.matchWinner = matchWinner;
     }
 }

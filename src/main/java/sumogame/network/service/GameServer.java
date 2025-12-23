@@ -16,13 +16,13 @@ public class GameServer implements NetworkService, Runnable {
     private Thread listenerThread;
     private boolean running;
     private final MessageHandler messageHandler;
-    private int playerId = 1; // Сервер всегда Player 1
-
-    // Храним персонаж сервера
+    private int playerId = 1;
     private CharacterType serverCharacter;
+    private int port;
 
-    public GameServer(MessageHandler messageHandler) {
+    public GameServer(MessageHandler messageHandler, int port) {
         this.messageHandler = messageHandler;
+        this.port = port;
     }
 
     public void setServerCharacter(CharacterType character) {
@@ -33,34 +33,31 @@ public class GameServer implements NetworkService, Runnable {
     @Override
     public void startServer() {
         try {
-            serverSocket = new ServerSocket(8080); //todo:добавить возможность ввести порт
+            serverSocket = new ServerSocket(port);
             running = true;
-            System.out.println("Сервер запущен на порту 8080");
+            System.out.println("Сервер запущен на порту " + port);
 
-            // Запускаем в отдельном потоке для неблокирующего ожидания
             new Thread(this).start();
 
         } catch (IOException e) {
-            System.err.println("Ошибка запуска сервера: " + e.getMessage());
+            System.err.println("Ошибка запуска сервера на порту " + port + ": " + e.getMessage());
         }
     }
 
     @Override
     public void run() {
         try {
-            System.out.println("Ожидание подключения клиента...");
+            System.out.println("Ожидание подключения клиента на порту " + port + "...");
             clientSocket = serverSocket.accept();
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
 
-            System.out.println("Клиент подключен!");
+            System.out.println("Клиент подключен на порту " + port + "!");
 
-            // Уведомляем обработчик
             if (messageHandler != null) {
-                messageHandler.onClientConnected(2); // Клиент всегда Player 2
+                messageHandler.onClientConnected(2);
             }
 
-            // отправляю пенрсонаж сервера клиенту
             if (serverCharacter != null) {
                 Message serverCharacterMessage = new Message(
                         Message.Type.PLAYER_JOIN,
@@ -71,12 +68,11 @@ public class GameServer implements NetworkService, Runnable {
                 System.out.println("Отправлен персонаж сервера клиенту: " + serverCharacter.name());
             }
 
-            // запускаю поток для чтения сообщений
             listenerThread = new Thread(this::listenForMessages);
             listenerThread.start();
 
         } catch (IOException e) {
-            System.err.println("Ошибка подключения: " + e.getMessage());
+            System.err.println("Ошибка подключения на порту " + port + ": " + e.getMessage());
             stop();
         }
     }
@@ -92,7 +88,7 @@ public class GameServer implements NetworkService, Runnable {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Соединение с клиентом разорвано");
+            System.out.println("Соединение с клиентом разорвано на порту " + port);
         } finally {
             stop();
             if (messageHandler != null) {
@@ -101,10 +97,8 @@ public class GameServer implements NetworkService, Runnable {
         }
     }
 
-    //todo: зачем метод?
     @Override
     public boolean connect(String address) {
-        // Сервер не подключается к другим серверам
         return false;
     }
 
@@ -139,5 +133,9 @@ public class GameServer implements NetworkService, Runnable {
         } catch (IOException e) {
             // Игнорируем ошибки закрытия
         }
+    }
+
+    public int getPort() {
+        return port;
     }
 }

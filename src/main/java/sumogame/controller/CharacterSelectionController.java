@@ -17,17 +17,13 @@ import javafx.scene.effect.InnerShadow;
 import sumogame.Main;
 import sumogame.model.CharacterType;
 
-/**
- * Контроллер для экрана выбора персонажа
- */
 public class CharacterSelectionController {
 
     @FXML
-    private HBox charactersContainer; // Ссылка на контейнер из FXML
-    private Main main; // Ссылка на главное приложение
-    private CharacterType selectedCharacter; // Выбранный персонаж
+    private HBox charactersContainer;
+    private Main main;
+    private CharacterType selectedCharacter;
 
-    // Эффекты для дизайна
     private DropShadow cardShadow;
     private DropShadow buttonShadow;
     private DropShadow textShadow;
@@ -37,7 +33,6 @@ public class CharacterSelectionController {
     }
 
     private void createEffects() {
-        // Тень для карточек
         cardShadow = new DropShadow();
         cardShadow.setColor(Color.rgb(255, 105, 180, 0.4));
         cardShadow.setRadius(20);
@@ -45,14 +40,12 @@ public class CharacterSelectionController {
         cardShadow.setOffsetY(5);
         cardShadow.setBlurType(BlurType.GAUSSIAN);
 
-        // Тень для кнопок
         buttonShadow = new DropShadow();
         buttonShadow.setColor(Color.rgb(219, 112, 147, 0.6));
         buttonShadow.setRadius(10);
         buttonShadow.setOffsetX(2);
         buttonShadow.setOffsetY(2);
 
-        // Тень для текста
         textShadow = new DropShadow();
         textShadow.setColor(Color.rgb(255, 182, 193, 0.8));
         textShadow.setRadius(3);
@@ -60,32 +53,26 @@ public class CharacterSelectionController {
         textShadow.setOffsetY(1);
     }
 
-
     public void setMain(Main main) {
         this.main = main;
-        initialize(); // Инициализируем когда Main установлен
+        initialize();
     }
 
     private void initialize() {
-        this.selectedCharacter = CharacterType.PINK; // Персонаж по умолчанию
-        createCharacterCards(); // Создаем карточки персонажей
+        this.selectedCharacter = CharacterType.PINK;
+        createCharacterCards();
     }
 
-
     private void createCharacterCards() {
-        // Очищаем контейнер
         charactersContainer.getChildren().clear();
 
-        // Для каждого типа персонажа создаем карточку
         for (CharacterType type : CharacterType.values()) {
             VBox characterCard = createCharacterCard(type);
             charactersContainer.getChildren().add(characterCard);
         }
 
-        // Обновляем подсветку выбранного персонажа
         updateSelectionUI();
     }
-
 
     private VBox createCharacterCard(CharacterType type) {
         VBox card = new VBox(15);
@@ -94,14 +81,12 @@ public class CharacterSelectionController {
         card.setEffect(cardShadow);
         card.setUserData(type);
 
-        // Фон карточки с градиентом
         String cardStyle = "-fx-background-color: linear-gradient(to bottom, #FFF0F5, #FFE4E1); " +
                 "-fx-background-radius: 20; " +
                 "-fx-border-color: #FFB6C1; " +
                 "-fx-border-width: 2; " +
                 "-fx-border-radius: 18;";
         card.setStyle(cardStyle);
-
 
         Circle characterCircle = new Circle(50);
 
@@ -112,7 +97,6 @@ public class CharacterSelectionController {
         innerShadow.setOffsetY(2);
         characterCircle.setEffect(innerShadow);
 
-        // Устанавливаем цвет в зависимости от типа персонажа
         switch (type) {
             case PINK:
                 characterCircle.setFill(Color.web("#FFB6C1"));
@@ -125,7 +109,6 @@ public class CharacterSelectionController {
                 break;
         }
 
-        // Название персонажа
         Text name = new Text(type.getName());
         name.setFont(Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
         name.setFill(Color.web("#DB7093"));
@@ -154,7 +137,6 @@ public class CharacterSelectionController {
                 "-fx-border-radius: 13;";
         selectButton.setStyle(buttonStyle);
 
-        // Эффект при наведении
         selectButton.setOnMouseEntered(e -> {
             selectButton.setStyle(buttonStyle + " -fx-background-color: linear-gradient(to bottom, #FF1493, #C71585);");
         });
@@ -163,27 +145,21 @@ public class CharacterSelectionController {
             selectButton.setStyle(buttonStyle);
         });
 
-        // Обработчик нажатия на кнопку
         selectButton.setOnAction(e -> {
             selectedCharacter = type;
             updateSelectionUI();
             System.out.println("Выбран персонаж: " + type.getName());
         });
 
-        // Добавляем все элементы в карточку
         card.getChildren().addAll(characterCircle, name, ability, description, selectButton);
-
         return card;
     }
 
-
     private void updateSelectionUI() {
-        // Проходим по всем карточкам в контейнере
         for (var node : charactersContainer.getChildren()) {
             VBox card = (VBox) node;
             CharacterType cardType = (CharacterType) card.getUserData();
 
-            // Если это выбранный персонаж - подсвечиваем
             if (cardType == selectedCharacter) {
                 String selectedStyle = "-fx-background-color: linear-gradient(to bottom, #FFE4E9, #FFD1DC); " +
                         "-fx-background-radius: 20; " +
@@ -209,24 +185,65 @@ public class CharacterSelectionController {
         System.out.println("Нажата кнопка: Создать игру");
         System.out.println("Выбран персонаж: " + selectedCharacter.getName());
 
-        if (main != null) {
-            main.startAsServer(selectedCharacter);
-        } else {
-            showError("Главное приложение не установлено");
-        }
-    }
+        // Диалог для выбора порта
+        TextInputDialog portDialog = new TextInputDialog("8080");
+        portDialog.setTitle("🌸 Настройки сервера");
+        portDialog.setHeaderText("Введите порт для сервера:");
+        portDialog.setContentText("Порт (1024-65535):");
 
+        portDialog.getDialogPane().setStyle("-fx-background-color: #FFF0F5;");
+        portDialog.getDialogPane().lookupButton(ButtonType.OK).setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093); " +
+                        "-fx-text-fill: white; -fx-font-weight: bold;"
+        );
+        portDialog.getDialogPane().lookupButton(ButtonType.CANCEL).setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #D8BFD8, #DDA0DD); " +
+                        "-fx-text-fill: white; -fx-font-weight: bold;"
+        );
+
+        portDialog.showAndWait().ifPresent(portStr -> {
+            if (portStr != null && !portStr.trim().isEmpty()) {
+                try {
+                    int port = Integer.parseInt(portStr.trim());
+                    if (port < 1024 || port > 65535) {
+                        showError("Порт должен быть в диапазоне 1024-65535");
+                        return;
+                    }
+
+                    if (main != null) {
+                        main.startAsServer(selectedCharacter, port);
+                    }
+                } catch (NumberFormatException e) {
+                    showError("Некорректный номер порта");
+                }
+            }
+        });
+    }
 
     @FXML
     private void handleConnectToGame() {
         System.out.println("Нажата кнопка: Подключиться");
         System.out.println("Выбран персонаж: " + selectedCharacter.getName());
 
-        // диалог для ввода адреса сервера
-        TextInputDialog dialog = new TextInputDialog("localhost");
+        // Диалог для ввода адреса и порта
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        javafx.scene.control.TextField addressField = new javafx.scene.control.TextField("localhost");
+        javafx.scene.control.TextField portField = new javafx.scene.control.TextField("8080");
+
+        grid.add(new javafx.scene.control.Label("Адрес сервера:"), 0, 0);
+        grid.add(addressField, 1, 0);
+        grid.add(new javafx.scene.control.Label("Порт:"), 0, 1);
+        grid.add(portField, 1, 1);
+
+        javafx.scene.control.Dialog<ButtonType> dialog = new javafx.scene.control.Dialog<>();
         dialog.setTitle("🌸 Подключение к серверу");
-        dialog.setHeaderText("Введите адрес сервера для подключения:");
-        dialog.setContentText("Адрес:");
+        dialog.setHeaderText("Введите параметры подключения:");
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
         dialog.getDialogPane().setStyle("-fx-background-color: #FFF0F5;");
         dialog.getDialogPane().lookupButton(ButtonType.OK).setStyle(
@@ -238,17 +255,32 @@ public class CharacterSelectionController {
                         "-fx-text-fill: white; -fx-font-weight: bold;"
         );
 
-        dialog.showAndWait().ifPresent(address -> {
-            if (address != null && !address.trim().isEmpty()) {
-                if (main != null) {
-                    main.startAsClient(selectedCharacter, address.trim());
-                } else {
-                    showError("Главное приложение не установлено");
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String address = addressField.getText().trim();
+                String portStr = portField.getText().trim();
+
+                if (address.isEmpty()) {
+                    showError("Адрес сервера не может быть пустым");
+                    return;
+                }
+
+                try {
+                    int port = Integer.parseInt(portStr);
+                    if (port < 1024 || port > 65535) {
+                        showError("Порт должен быть в диапазоне 1024-65535");
+                        return;
+                    }
+
+                    if (main != null) {
+                        main.startAsClient(selectedCharacter, address, port);
+                    }
+                } catch (NumberFormatException e) {
+                    showError("Некорректный номер порта");
                 }
             }
         });
     }
-
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -256,7 +288,6 @@ public class CharacterSelectionController {
         alert.setHeaderText(null);
         alert.setContentText(message);
 
-        // Стилизация алерта
         alert.getDialogPane().setStyle("-fx-background-color: #FFF0F5;");
         Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
         okButton.setStyle("-fx-background-color: linear-gradient(to bottom, #FF69B4, #DB7093); " +

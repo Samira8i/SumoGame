@@ -1,12 +1,13 @@
 package sumogame.engine;
 
 import javafx.application.Platform;
+import sumogame.controller.GameController;
 import sumogame.model.*;
-import sumogame.model.Arena;  // Если еще нет
+import sumogame.model.Arena;
 
 public class GameEngine {
     private GameState gameState;
-    private GameEventListener listener;
+    private GameController gameController;  // Прямая ссылка на контроллер
     private boolean isServer;
     private CharacterType localCharacter;
     private double roundTimer;
@@ -14,24 +15,24 @@ public class GameEngine {
     private boolean roundCompletionInProgress = false;
     private boolean gameInitialized = false;
 
-    public GameEngine(CharacterType localCharacter, boolean isServer) {
+    public GameEngine(CharacterType localCharacter, boolean isServer, GameController controller) {
         this.localCharacter = localCharacter;
         this.isServer = isServer;
+        this.gameController = controller;  // Сохраняем ссылку
         this.roundEnded = false;
         this.roundCompletionInProgress = false;
         initializeGameState();
     }
 
     private void initializeGameState() {
-        // Создаем игроков на стартовых позициях арены
         Arena arena = new Arena(ArenaType.PINK_CIRCLE);
 
         CharacterType player1Type, player2Type;
         if (isServer) {
             player1Type = localCharacter;
-            player2Type = CharacterType.PINK; // По умолчанию
+            player2Type = CharacterType.PINK;
         } else {
-            player1Type = CharacterType.PINK; // По умолчанию
+            player1Type = CharacterType.PINK;
             player2Type = localCharacter;
         }
 
@@ -42,7 +43,6 @@ public class GameEngine {
         gameState.setPlayer1(player1);
         gameState.setPlayer2(player2);
         gameState.setRoundTime(GameConfig.ROUND_DURATION);
-        // Арена уже создана в конструкторе GameState (PINK_CIRCLE для первого раунда)
 
         this.roundTimer = GameConfig.ROUND_DURATION;
         gameState.setGameActive(false);
@@ -53,7 +53,6 @@ public class GameEngine {
         System.out.println("Игрок 1: " + player1Type.getName());
         System.out.println("Игрок 2: " + player2Type.getName());
         System.out.println("Арена: " + gameState.getCurrentArena().getType().getName());
-        System.out.println("Ожидание подключения противника...");
     }
 
     public void startGame() {
@@ -66,11 +65,8 @@ public class GameEngine {
             try {
                 Thread.sleep(1000);
                 Platform.runLater(() -> {
-                    if (listener != null) {
-                        listener.onGameEvent("GAME_STARTED", "");
-                        listener.onGameEvent("ROUND_STARTED",
-                                "Раунд 1 из 3 - " + gameState.getCurrentArena().getType().getName());
-                    }
+                    System.out.println("✅ Игра началась!");
+                    System.out.println("🚀 Раунд 1 из 3 - " + gameState.getCurrentArena().getType().getName());
                 });
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -91,13 +87,11 @@ public class GameEngine {
             gameState.getPlayer1().setType(opponentCharacter);
             System.out.println("Сервер выбрал: " + opponentCharacter.getName());
         }
-        notifyStateUpdate();
     }
 
     public void processPlayerInput(String directionStr, boolean isLocal) {
         if (!gameState.isGameActive() || roundEnded || gameState.isMatchFinished()) return;
 
-        // Преобразуем строку в объект Direction
         Direction direction;
         try {
             direction = Direction.valueOf(directionStr.toUpperCase());
@@ -106,7 +100,6 @@ public class GameEngine {
             return;
         }
 
-        // Определяем, какого игрока нужно двигать
         Player playerToMove = isLocal ?
                 (isServer ? gameState.getPlayer1() : gameState.getPlayer2()) :
                 (isServer ? gameState.getPlayer2() : gameState.getPlayer1());
@@ -118,8 +111,6 @@ public class GameEngine {
         if (!roundCompletionInProgress && !roundEnded) {
             checkIfPlayerOut();
         }
-
-        notifyStateUpdate();
     }
 
     private void constrainPlayerToArena(Player player) {
@@ -210,7 +201,7 @@ public class GameEngine {
     }
 
     private void endRound(int winnerId) {
-        if (listener == null || roundEnded) {
+        if (roundEnded) {
             return;
         }
 
@@ -241,30 +232,57 @@ public class GameEngine {
             roundResult = "Раунд " + gameState.getRoundNumber() + ": Ничья!";
         }
 
-        listener.onGameEvent("ROUND_ENDED", roundResult);
-        notifyStateUpdate();
+        System.out.println("🏁 " + roundResult);
 
-        if (gameState.allRoundsPlayed() || gameState.getPlayer1Score() >= 2 || gameState.getPlayer2Score() >= 2) {
+        // Проверяем, завершен ли матч
+        boolean matchFinished = false;
+
+        // 1. Проверяем, набрал ли кто-то 2 очка
+        if (gameState.getPlayer1Score() >= 2) {
+            gameState.setMatchWinner(1);
+            matchFinished = true;
+            System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 1 🏆");
+        } else if (gameState.getPlayer2Score() >= 2) {
+            gameState.setMatchWinner(2);
+            matchFinished = true;
+            System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 2 🏆");
+        }
+        // 2. Проверяем, сыграны ли все раунды
+        else if (gameState.allRoundsPlayed()) {
+            // Определяем победителя по очкам
+            if (gameState.getPlayer1Score() > gameState.getPlayer2Score()) {
+                gameState.setMatchWinner(1);
+                System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 1 🏆");
+            } else if (gameState.getPlayer2Score() > gameState.getPlayer1Score()) {
+                gameState.setMatchWinner(2);
+                System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 2 🏆");
+            } else {
+                gameState.setMatchWinner(0);
+                System.out.println("🤝 МАТЧ ЗАКОНЧИЛСЯ ВНИЧЬЮ 🤝");
+            }
+            matchFinished = true;
+        }
+
+        if (matchFinished) {
             gameState.setMatchFinished(true);
-            int matchWinner = gameState.getMatchWinner();
+
             String winnerMessage;
+            int matchWinner = gameState.getMatchWinner();
 
             if (matchWinner == 1) {
                 winnerMessage = "Игрок 1 победил в матче со счетом " +
                         gameState.getPlayer1Score() + ":" + gameState.getPlayer2Score() + "!";
-                System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 1 🏆");
             } else if (matchWinner == 2) {
                 winnerMessage = "Игрок 2 победил в матче со счетом " +
                         gameState.getPlayer1Score() + ":" + gameState.getPlayer2Score() + "!";
-                System.out.println("🏆 ПОБЕДИТЕЛЬ МАТЧА: ИГРОК 2 🏆");
             } else {
                 winnerMessage = "Ничья! Счет " +
                         gameState.getPlayer1Score() + ":" + gameState.getPlayer2Score();
-                System.out.println("🤝 МАТЧ ЗАКОНЧИЛСЯ ВНИЧЬЮ 🤝");
             }
 
-            listener.onGameEvent("MATCH_FINISHED", winnerMessage);
+            System.out.println("🎮 " + winnerMessage);
 
+            // Задержка перед показом результатов
             new Thread(() -> {
                 try {
                     Thread.sleep(3000);
@@ -273,7 +291,6 @@ public class GameEngine {
                     e.printStackTrace();
                 }
             }).start();
-
         } else {
             System.out.println("Запуск следующего раунда через 3 секунды...");
             new Thread(() -> {
@@ -292,7 +309,7 @@ public class GameEngine {
     private void startNewRound() {
         if (gameState.isMatchFinished() || gameState.allRoundsPlayed()) {
             System.out.println("Матч завершен, новый раунд не запускается");
-            if (gameState.isMatchFinished() && listener != null) {
+            if (gameState.isMatchFinished()) {
                 showMatchResults();
             }
             return;
@@ -302,6 +319,8 @@ public class GameEngine {
             gameState.incrementRoundNumber();
         } else {
             System.out.println("Все раунды сыграны");
+            gameState.setMatchFinished(true);
+            showMatchResults();
             return;
         }
 
@@ -311,7 +330,6 @@ public class GameEngine {
         roundEnded = false;
         roundCompletionInProgress = false;
 
-        // Выбираем арену для текущего раунда
         ArenaType[] arenaTypes = ArenaType.values();
         int arenaIndex = (gameState.getRoundNumber() - 1) % arenaTypes.length;
         gameState.setCurrentArena(arenaTypes[arenaIndex]);
@@ -322,10 +340,8 @@ public class GameEngine {
         System.out.println("Арена: " + gameState.getCurrentArena().getType().getName());
         System.out.println("Счет: " + gameState.getPlayer1Score() + " - " + gameState.getPlayer2Score());
 
-        listener.onGameEvent("ROUND_STARTED",
-                "Раунд " + gameState.getRoundNumber() + " из 3 - " +
-                        gameState.getCurrentArena().getType().getName());
-        notifyStateUpdate();
+        System.out.println("🚀 Раунд " + gameState.getRoundNumber() + " из 3 - " +
+                gameState.getCurrentArena().getType().getName());
     }
 
     private void resetPlayerPositionsForArena() {
@@ -339,9 +355,9 @@ public class GameEngine {
     }
 
     private void showMatchResults() {
-        if (listener != null) {
-            System.out.println("=== ПОКАЗЫВАЕМ РЕЗУЛЬТАТЫ МАТЧА ===");
-            listener.onGameEvent("SHOW_RESULTS", "");
+        System.out.println("=== ПОКАЗЫВАЕМ РЕЗУЛЬТАТЫ МАТЧА ===");
+        if (gameController != null) {
+            gameController.showMatchResults();  // Прямой вызов!
         }
     }
 
@@ -370,13 +386,6 @@ public class GameEngine {
 
         gameState.getPlayer1().update(deltaTime);
         gameState.getPlayer2().update(deltaTime);
-        notifyStateUpdate();
-    }
-
-    private void notifyStateUpdate() {
-        if (listener != null) {
-            listener.onGameStateUpdated(gameState);
-        }
     }
 
     public boolean activatePowerUp() {
@@ -387,7 +396,6 @@ public class GameEngine {
 
         if (activated) {
             System.out.println(localPlayer.getType().getName() + " использовал способность!");
-            notifyStateUpdate();
         }
 
         return activated;
@@ -399,7 +407,6 @@ public class GameEngine {
         Player opponent = isServer ? gameState.getPlayer2() : gameState.getPlayer1();
         opponent.activatePowerUp();
         System.out.println("Противник использовал способность!");
-        notifyStateUpdate();
     }
 
     // Геттеры
@@ -418,9 +425,5 @@ public class GameEngine {
 
     public boolean isMatchFinished() {
         return gameState.isMatchFinished();
-    }
-
-    public void setGameEventListener(GameEventListener listener) {
-        this.listener = listener;
     }
 }

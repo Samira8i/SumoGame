@@ -12,6 +12,7 @@ public class NetworkManager implements MessageHandler {
     private final NetworkService networkService;
     private final GameController gameController;
     private final boolean isServer;
+    private final int port;
 
     private CharacterType myCharacter;
     private boolean opponentConnected = false;
@@ -19,22 +20,37 @@ public class NetworkManager implements MessageHandler {
     public NetworkManager(GameController controller, boolean isServer) {
         this.gameController = controller;
         this.isServer = isServer;
-        //связуем и исходя из параметра создаю сервер/клиент
+        this.port = controller.getPort();
+
+        // создаем сервер/клиент в зависимости от параметра
         if (isServer) {
-            this.networkService = new GameServer(this);
+            this.networkService = new GameServer(this, port);
         } else {
             String serverAddress = controller.getServerAddress();
-            this.networkService = new GameClient(this, serverAddress);
+            this.networkService = new GameClient(this, serverAddress, port);
         }
     }
-    //todo: понять
+
+    // Альтернативный конструктор с явным указанием порта
+    public NetworkManager(GameController controller, boolean isServer, int port) {
+        this.gameController = controller;
+        this.isServer = isServer;
+        this.port = port;
+
+        if (isServer) {
+            this.networkService = new GameServer(this, port);
+        } else {
+            String serverAddress = controller.getServerAddress();
+            this.networkService = new GameClient(this, serverAddress, port);
+        }
+    }
+
     public void setMyCharacter(CharacterType character) {
         this.myCharacter = character;
         if (isServer && networkService instanceof GameServer) {
             ((GameServer) networkService).setServerCharacter(character);
         }
     }
-
 
     public void startNetwork() {
         if (isServer) {
@@ -104,7 +120,7 @@ public class NetworkManager implements MessageHandler {
                 break;
 
             case GAME_EVENT:
-                handleGameEvent(message.getData());
+                System.out.println("Получено GAME_EVENT сообщение: " + message.getData());
                 break;
 
             case PLAYER_JOIN:
@@ -113,15 +129,6 @@ public class NetworkManager implements MessageHandler {
 
             default:
                 System.out.println("Необработанный тип сообщения: " + message.getType());
-        }
-    }
-
-    private void handleGameEvent(String data) {
-        String[] parts = data.split(":", 2);
-        if (parts.length == 2) {
-            gameController.onGameEvent(parts[0], parts[1]);
-        } else {
-            gameController.onGameEvent(data, "");
         }
     }
 
@@ -150,9 +157,21 @@ public class NetworkManager implements MessageHandler {
         System.out.println("Противник отключился: Player " + playerId);
         opponentConnected = false;
 
-        if (gameController != null) {
-            gameController.onGameEvent("PLAYER_DISCONNECTED", String.valueOf(playerId));
-        }
+        System.out.println("Игрок отключился. Можно добавить метод в GameController при необходимости.");
     }
 
+    // Геттеры для информации о подключении
+    public int getPort() {
+        return port;
+    }
+
+    public String getConnectionInfo() {
+        if (isServer) {
+            return "Сервер на порту: " + port;
+        } else {
+            String address = (networkService instanceof GameClient) ?
+                    ((GameClient) networkService).getServerAddress() : "неизвестно";
+            return "Клиент: " + address + ":" + port;
+        }
+    }
 }

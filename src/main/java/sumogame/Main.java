@@ -13,7 +13,7 @@ import sumogame.model.CharacterType;
 import sumogame.model.GameState;
 
 public class Main extends Application {
-    private Stage primaryStage; // главное окно приложения
+    private Stage primaryStage;
     private GameController gameController;
     private boolean isServerMode;
 
@@ -36,7 +36,7 @@ public class Main extends Application {
             CharacterSelectionController controller = loader.getController();
             controller.setMain(this);
 
-            Scene scene = new Scene(root, 1000, 700); // Увеличиваем размер сцены
+            Scene scene = new Scene(root, 1000, 700);
             primaryStage.setScene(scene);
 
         } catch (Exception e) {
@@ -87,8 +87,7 @@ public class Main extends Application {
 
     public void showMatchResults(GameState gameState, boolean isLocalPlayer1) {
         try {
-            System.out.println("Main.showMatchResults: передаем isLocalPlayer1 = " + isLocalPlayer1 +
-                    " (сервер=" + isLocalPlayer1 + ", клиент=" + (!isLocalPlayer1) + ")");
+            System.out.println("Main.showMatchResults: передаем isLocalPlayer1 = " + isLocalPlayer1);
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/results-screen.fxml"));
             Parent root = loader.load();
@@ -116,30 +115,23 @@ public class Main extends Application {
         }
     }
 
-
-    public void startAsServer(CharacterType characterType) {
+    public void startAsServer(CharacterType characterType, int port) {
         this.isServerMode = true;
-        System.out.println("Запуск в режиме сервера с персонажем: " + characterType.getName());
+        System.out.println("Запуск сервера на порту " + port + " с персонажем: " + characterType.getName());
 
         try {
-            // загружаю игровой экран
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/game-screen.fxml"));
             Parent root = loader.load();
 
             GameScreenController gameScreenController = loader.getController();
 
-            // создаю и настраиваю GameController
-            gameController = new GameController(true, characterType, null);
-            gameController.setMainApp(this); // Передаем ссылку на Main
+            gameController = new GameController(true, characterType, null, port);
+            gameController.setMainApp(this);
 
-            // передаем GameController в GameScreenController
             gameScreenController.setGameController(gameController);
-
-            // запускаем сетевое соединение
             gameController.startGame();
             gameController.setGameRenderer(gameScreenController.getGameRenderer());
 
-            // Показываем игровой экран
             Scene gameScene = new Scene(root, 1000, 700);
             gameScene.setOnKeyPressed(gameScreenController::handleKeyPressed);
             primaryStage.setScene(gameScene);
@@ -150,32 +142,23 @@ public class Main extends Application {
         }
     }
 
-
-    public void startAsClient(CharacterType characterType, String serverAddress) {
+    public void startAsClient(CharacterType characterType, String serverAddress, int port) {
         this.isServerMode = false;
-        System.out.println("Подключение к серверу " + serverAddress + " с персонажем: " + characterType.getName());
+        System.out.println("Подключение к " + serverAddress + ":" + port + " с персонажем: " + characterType.getName());
 
         try {
-            // загружаем игровой экран
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/sumogame/view/game-screen.fxml"));
             Parent root = loader.load();
 
-            // получаем контроллер игрового экрана
             GameScreenController gameScreenController = loader.getController();
 
-            // создаем и настраиваем GameController
-            gameController = new GameController(false, characterType, serverAddress);
-            gameController.setMainApp(this); // Передаем ссылку на Main
+            gameController = new GameController(false, characterType, serverAddress, port);
+            gameController.setMainApp(this);
 
-            // передаем GameController в GameScreenController
             gameScreenController.setGameController(gameController);
-
-            // запускаем сетевое соединение
             gameController.startGame();
-
             gameController.setGameRenderer(gameScreenController.getGameRenderer());
 
-            // игровой экран
             Scene gameScene = new Scene(root, 1000, 700);
             gameScene.setOnKeyPressed(gameScreenController::handleKeyPressed);
             primaryStage.setScene(gameScene);

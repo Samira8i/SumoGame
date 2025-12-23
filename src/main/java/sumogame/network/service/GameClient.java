@@ -16,8 +16,8 @@ public class GameClient implements NetworkService, Runnable {
     private final MessageHandler messageHandler;
     private final String serverAddress;
     private final int serverPort;
-    private static final int CONNECT_TIMEOUT = 5000; // 5 секунд
-    private final int playerId = 2; // Клиент всегда Player 2
+    private static final int CONNECT_TIMEOUT = 5000;
+    private final int playerId = 2;
 
     public GameClient(MessageHandler messageHandler, String serverAddress, int serverPort) {
         this.messageHandler = messageHandler;
@@ -25,33 +25,29 @@ public class GameClient implements NetworkService, Runnable {
         this.serverPort = serverPort;
     }
 
-    public GameClient(MessageHandler messageHandler, String serverAddress) {
-        this(messageHandler, serverAddress, 8080);
-    }
-
     @Override
     public boolean connect(String address) {
         try {
+            System.out.println("Попытка подключения к " + serverAddress + ":" + serverPort);
             socket = new Socket();
             socket.connect(new java.net.InetSocketAddress(serverAddress, serverPort), CONNECT_TIMEOUT);
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
             connected = true;
 
-            System.out.println("Подключено к серверу: " + serverAddress + ":" + serverPort);
+            System.out.println("Успешно подключено к серверу: " + serverAddress + ":" + serverPort);
 
-            // запускаю поток прослушивания
-            listenerThread = new Thread(this, "Client-Listener"); //todo: а где мы указали что поток делает
+            listenerThread = new Thread(this, "Client-Listener");
             listenerThread.setDaemon(true);
             listenerThread.start();
 
             return true;
 
         } catch (ConnectException e) {
-            System.err.println("Не удалось подключиться к серверу: " + e.getMessage());
+            System.err.println("Не удалось подключиться к серверу " + serverAddress + ":" + serverPort + ": " + e.getMessage());
             return false;
         } catch (IOException e) {
-            System.err.println("Ошибка подключения: " + e.getMessage());
+            System.err.println("Ошибка подключения к " + serverAddress + ":" + serverPort + ": " + e.getMessage());
             return false;
         }
     }
@@ -72,13 +68,13 @@ public class GameClient implements NetworkService, Runnable {
             }
         } catch (IOException e) {
             if (connected) {
-                System.out.println("Соединение с сервером разорвано: " + e.getMessage());
+                System.out.println("Соединение с сервером " + serverAddress + ":" + serverPort + " разорвано: " + e.getMessage());
             }
         } finally {
             disconnect();
         }
     }
-    //todo: и нафиг нам этот метод
+
     @Override
     public void startServer() {
         throw new UnsupportedOperationException("Клиент не может запустить сервер");
@@ -117,5 +113,13 @@ public class GameClient implements NetworkService, Runnable {
     @Override
     public int getPlayerId() {
         return playerId;
+    }
+
+    public String getServerAddress() {
+        return serverAddress;
+    }
+
+    public int getServerPort() {
+        return serverPort;
     }
 }
