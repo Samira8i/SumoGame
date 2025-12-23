@@ -97,7 +97,7 @@ public class GameClient implements NetworkService, Runnable {
             if (in != null) in.close();
             if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
-            // Игнорируем ошибки при закрытии
+            // Игнорирую ошибки при закрытии
         } finally {
             if (messageHandler != null) {
                 messageHandler.onClientDisconnected(playerId);
@@ -117,9 +117,5 @@ public class GameClient implements NetworkService, Runnable {
 
     public String getServerAddress() {
         return serverAddress;
-    }
-
-    public int getServerPort() {
-        return serverPort;
     }
 }

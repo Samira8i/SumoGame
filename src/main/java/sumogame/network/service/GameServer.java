@@ -58,6 +58,7 @@ public class GameServer implements NetworkService, Runnable {
                 messageHandler.onClientConnected(2);
             }
 
+            // Отправляем свой персонаж при подключении
             if (serverCharacter != null) {
                 Message serverCharacterMessage = new Message(
                         Message.Type.PLAYER_JOIN,
@@ -65,14 +66,14 @@ public class GameServer implements NetworkService, Runnable {
                         playerId
                 );
                 sendMessage(serverCharacterMessage);
-                System.out.println("Отправлен персонаж сервера клиенту: " + serverCharacter.name());
+                System.out.println("Сервер отправил свой персонаж: " + serverCharacter.name());
             }
 
             listenerThread = new Thread(this::listenForMessages);
             listenerThread.start();
 
         } catch (IOException e) {
-            System.err.println("Ошибка подключения на порту " + port + ": " + e.getMessage());
+            System.err.println("Ошибка подключения: " + e.getMessage());
             stop();
         }
     }
@@ -131,11 +132,7 @@ public class GameServer implements NetworkService, Runnable {
             if (clientSocket != null) clientSocket.close();
             if (serverSocket != null) serverSocket.close();
         } catch (IOException e) {
-            // Игнорируем ошибки закрытия
+            // игнорирую ошибки закрытия
         }
-    }
-
-    public int getPort() {
-        return port;
     }
 }

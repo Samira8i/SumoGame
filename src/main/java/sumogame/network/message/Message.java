@@ -5,13 +5,11 @@ import com.google.gson.Gson;
 public class Message {
 
     public enum Type {
-        PLAYER_JOIN,      // Подключение игрока
+        PLAYER_JOIN,      // Подключение игрока + выбор персонажа
         PLAYER_MOVE,      // Движение игрока
-        GAME_STATE,       // Состояние игры
         POWER_UP,         // Активация способности
-        GAME_EVENT,       // Игровое событие
-        PLAYER_READY,     // Игрок готов
-        MATCH_RESULT      // Результат матча
+        ROUND_RESULT      // Результат раунда (сервер → клиент) такой немноого странный ти
+        //прежде всего для сверки, чтобы не было рассинхрона
     }
 
     private final Type type;
@@ -37,12 +35,12 @@ public class Message {
     }
 
     public boolean isValid() {
-        return type != null && data != null;
+        return type != null && data != null && (playerId == 1 || playerId == 2);
     }
 
     @Override
     public String toString() {
-        return String.format("Message{type=%s, data='%s', playerId=%d}",
-                type, data, playerId);
+        return String.format("Message{type=%s, playerId=%d, data='%s'}",
+                type, playerId, data);
     }
 }
